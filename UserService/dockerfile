@@ -1,0 +1,15 @@
+FROM golang:1.23.1 AS builder
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+WORKDIR /app/cmd/myapp
+RUN go build -o myapp .
+
+FROM debian:latest 
+WORKDIR /root/
+COPY --from=builder /app/cmd/myapp/myapp .
+COPY --from=builder /app/config ./config
+RUN chmod +x myapp
+EXPOSE 8080
+CMD ["./myapp"]
